@@ -1,0 +1,49 @@
+-- orderList ordena una lista de números flotantes en orden descendente.
+-- Entrada: una lista de flotantes.
+-- Salida: la misma lista pero ordenada de mayor a menor.
+orderList :: [Float] -> [Float]
+orderList [] = []
+orderList xs =
+  let m = top xs
+  in m : orderList (removeFirst m xs)
+
+-- top devuelve el mayor elemento de una lista de flotantes.
+-- Entrada: una lista de flotantes.
+-- Salida: el flotante máximo en la lista.
+top :: [Float] -> Float
+top [x] = x
+top (x:xs)
+  | greaterThan x (top xs) = x
+  | otherwise = top xs
+
+-- removeFirst elimina la primera ocurrencia de un elemento en la lista.
+-- Entradas: un flotante y una lista de flotantes.
+-- Salida: la lista sin la primera ocurrencia de ese flotante.
+removeFirst :: Float -> [Float] -> [Float]
+removeFirst _ [] = []
+removeFirst y (x:xs)
+  | equalsF x y = xs
+  | otherwise  = x : removeFirst y xs
+
+-- greaterThan compara dos flotantes y devuelve True si el primero es mayor.
+-- Entradas: dos flotantes x e y.
+-- Salida: True si x > y, False en otro caso.
+greaterThan :: Float -> Float -> Bool
+greaterThan x y = (substractF x y) > 0
+
+-- equalsF compara dos flotantes y devuelve True si son iguales.
+-- Entradas: dos flotantes x e y.
+-- Salida: True si x == y, False en otro caso.
+equalsF :: Float -> Float -> Bool
+equalsF x y = not (greaterThan x y) && not (greaterThan y x)
+
+-- substractF calcula la resta de dos flotantes.
+-- Entradas: dos flotantes x e y.
+-- Salida: el resultado x - y.
+substractF :: Float -> Float -> Float
+substractF x y = x - y
+
+
+main :: IO ()
+main = do
+  print (orderList [1, 25, 5,-4])
