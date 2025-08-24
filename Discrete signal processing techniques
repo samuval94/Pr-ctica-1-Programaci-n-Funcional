@@ -1,1 +1,141 @@
+------------------------------------------------------------
+-- Constante pi
+------------------------------------------------------------
+piVal :: Double
+piVal = 3.141592653589793
 
+------------------------------------------------------------
+-- absVal
+-- Entrada: x :: Double
+-- Salida: |x| (valor absoluto)
+------------------------------------------------------------
+absVal :: Double -> Double
+absVal x = if x >= 0 then x else (0 - x)
+
+------------------------------------------------------------
+-- sqrtBusca
+-- Aproxima la raíz cuadrada por búsqueda incremental
+-- Entrada: x :: Double
+-- Salida: sqrt(x) aprox.
+------------------------------------------------------------
+sqrtBusca :: Double -> Double
+sqrtBusca x = busca 0
+  where
+    paso = 0.0001
+    busca y =
+      if y*y > x
+      then y
+      else busca (y + paso)
+
+------------------------------------------------------------
+-- aCoef
+-- Coeficiente de normalización de la DCT
+-- Entrada: k :: Int (índice)
+--          n :: Int (tamaño de la lista)
+-- Salida: Double (factor de escala)
+------------------------------------------------------------
+aCoef :: Int -> Int -> Double
+aCoef k n =
+  if k == 0
+  then sqrtBusca (1 / fromIntegral n)
+  else sqrtBusca (2 / fromIntegral n)
+
+------------------------------------------------------------
+-- nth
+-- Entrada: lista [a], índice n
+-- Salida: elemento en posición n
+------------------------------------------------------------
+nth :: [a] -> Int -> a
+nth (y:ys) n = if n == 0 then y else nth ys (n-1)
+
+------------------------------------------------------------
+-- len
+-- Entrada: lista [a]
+-- Salida: longitud (Int)
+------------------------------------------------------------
+len :: [a] -> Int
+len [] = 0
+len (_:xs) = 1 + len xs
+
+------------------------------------------------------------
+-- sumatoria
+-- Entrada: función f :: (Int -> Double), número n
+-- Salida: suma de f(0) + f(1) + ... + f(n-1)
+------------------------------------------------------------
+sumatoria :: (Int -> Double) -> Int -> Double
+sumatoria f n =
+  if n == 0
+  then 0
+  else f (n-1) + sumatoria f (n-1)
+
+------------------------------------------------------------
+-- dctTerm
+-- Calcula un término de la DCT
+-- Entrada: xs (lista), k (índice), n (posición), bigN (tamaño)
+-- Salida: Double (término de la fórmula)
+------------------------------------------------------------
+dctTerm :: [Double] -> Int -> Int -> Int -> Double
+dctTerm xs k n bigN =
+  (nth xs n) * cos (((fromIntegral n + 0.5) * piVal * fromIntegral k) / fromIntegral bigN)
+
+------------------------------------------------------------
+-- dctK
+-- Calcula el coeficiente k de la DCT
+-- Entrada: xs (lista), k (índice)
+-- Salida: Double (coeficiente de la DCT)
+------------------------------------------------------------
+dctK :: [Double] -> Int -> Double
+dctK xs k =
+  let bigN = len xs
+      ak   = aCoef k bigN
+      suma = sumatoria (\n -> dctTerm xs k n bigN) bigN
+  in ak * suma
+
+------------------------------------------------------------
+-- dct
+-- Calcula la DCT completa
+-- Entrada: xs :: [Double] (lista original)
+-- Salida: [Double] (lista de coeficientes DCT)
+------------------------------------------------------------
+dct :: [Double] -> [Double]
+dct xs = dctRec xs 0 (len xs)
+  where
+    dctRec xs k n =
+      if k == n
+      then []
+      else dctK xs k : dctRec xs (k+1) n
+
+------------------------------------------------------------
+-- round4
+-- Redondea un número a 4 decimales
+------------------------------------------------------------
+round4 :: Double -> Double
+round4 x =
+  let escala   = 10000.0
+      valor    = x * escala
+      ajustado = if x >= 0 then valor + 0.5 else valor - 0.5
+      entero   = fromEnum ajustado
+  in fromIntegral entero / escala
+
+------------------------------------------------------------
+-- formatList
+-- Aplica redondeo a toda la lista
+------------------------------------------------------------
+formatList :: [Double] -> [Double]
+formatList [] = []
+formatList (x:xs) = round4 x : formatList xs
+
+------------------------------------------------------------
+-- dctFinal
+-- Aplica la DCT y redondea los resultados
+------------------------------------------------------------
+dctFinal :: [Double] -> [Double]
+dctFinal xs = formatList (dct xs)
+
+------------------------------------------------------------
+-- main
+-- Prueba del programa con lista [1..10]
+------------------------------------------------------------
+main :: IO ()
+main = do
+  print (dctFinal [1,2,3,4,5,6,7,8,9,10])
