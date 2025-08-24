@@ -1,0 +1,54 @@
+factorial :: Int -> Int
+factorial 0 = 1
+factorial n = n * factorial (n-1)
+
+potencia :: Double -> Int -> Double
+potencia _ 0 = 1
+potencia x n = x * potencia x (n-1)
+
+-- ex_aprox: Aproxima e^x con n+1 términos de la serie de Taylor 
+-- Entradas: Double, punto donde evaluar. Int, número de términos menos 1. 
+-- Salida: Double, aproximación final.
+ex_aprox :: Double -> Int -> Double
+ex_aprox x n = sumaExp x n 0
+
+-- sumaExp: Suma los términos k=0..n de la serie e^x.
+sumaExp :: Double -> Int -> Int -> Double
+sumaExp x n k =
+  if k > n then 0 -- si k > 0, ya no hay términos que sumar, por lo tanto para.
+  else (potencia x k / fromIntegral (factorial k)) + sumaExp x n (k+1) -- Usamos fromIntegral para convertir enteros en doubles.
+
+-- cos_aprox: Aproxima cos(x) con n+1 términos de la serie de Taylor.
+cos_aprox :: Double -> Int -> Double
+cos_aprox x n = sumaCos x n 0
+
+-- sumaCos: Suma los términos k=0..n de la serie de cos(x).
+sumaCos :: Double -> Int -> Int -> Double
+sumaCos x n k =
+  if k > n then 0
+  else (((potencia (-1) k) * (potencia x (2*k))) / fromIntegral (factorial (2*k)))
+        + sumaCos x n (k+1)
+
+--ln_aprox: Aproxima ln(1+x) con N términos.
+ln_aprox :: Double -> Int -> Double
+ln_aprox x n = sumaLn x n 1
+
+sumaLn :: Double -> Int -> Int -> Double
+sumaLn x n k =
+  if k > n then 0
+  else (((potencia (-1) (k+1)) * (potencia x k)) / fromIntegral k) + sumaLn x n (k+1)
+
+main :: IO ()
+main = do
+  putStrLn "=== Aproximaciones con Series de Taylor ==="
+  let x1 = 1
+      n1 = 10
+  putStrLn ("e^" ++ show x1 ++ " ≈ " ++ show (ex_aprox x1 n1))
+
+  let x2 = 1
+      n2 = 10
+  putStrLn ("cos(" ++ show x2 ++ ") ≈ " ++ show (cos_aprox x2 n2))
+
+  let x3 = 0.5
+      n3 = 20
+  putStrLn ("ln(1+" ++ show x3 ++ ") ≈ " ++ show (ln_aprox x3 n3))
